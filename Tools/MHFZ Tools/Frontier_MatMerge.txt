@@ -1,0 +1,33 @@
+import bpy
+
+print("---------------------")
+bpy.ops.object.select_all(action='SELECT')
+bpy.context.scene.objects.active = bpy.data.objects["FModMeshpart 000"]
+bpy.ops.object.join()
+bpy.ops.mesh.separate(type='MATERIAL')
+
+meshlist = []
+for obj in [o for o in bpy.data.objects if o.type == 'MESH']:
+    meshlist.append(obj)
+skiplist = []
+
+for i in meshlist:
+    if i in skiplist:
+        continue
+    bpy.ops.object.select_all(action='SELECT')
+    img_name = i.active_material.node_tree.nodes['Diffuse Texture'].image.name.split(".")[0]
+    print(img_name)
+    skiplist.append(i)
+    
+    for j in meshlist:
+        if j in skiplist:
+            continue
+        jmg_name = j.active_material.node_tree.nodes['Diffuse Texture'].image.name.split(".")[0]
+        if img_name == jmg_name:
+            j.data.materials.clear()
+            bpy.ops.object.select_all(action='DESELECT')
+            j.select = True
+            i.select = True
+            bpy.context.scene.objects.active = i
+            bpy.ops.object.join()
+            skiplist.append(j)
